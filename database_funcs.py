@@ -3,6 +3,7 @@
 from datetime import datetime
 from typing import List
 
+import sqlalchemy.exc
 from sqlalchemy.orm import Session
 
 from database_core import *
@@ -181,4 +182,24 @@ def lesson_exist(id: int) -> bool:
 
 # # #
 # # # LESSON MANAGMENT END
+# # #
+
+
+# # #
+# # # USERS MANAGMENT
+# # #
+
+
+def add_user(telegram_id: str):
+    with Session(autoflush=True, bind=engine) as session:
+        user = User(telegram_id=telegram_id)
+        try:
+            session.add(user)
+            session.commit()
+        except sqlalchemy.exc.IntegrityError:
+            pass
+
+
+# # #
+# # # USERS MANAGMENT END
 # # #

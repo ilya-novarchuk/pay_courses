@@ -496,6 +496,7 @@ class BotMain:
 
     @bot.message_handler(commands=['start'])
     def start(message: telebot.types.Message):
+        database_funcs.add_user(str(message.from_user.id))
         if is_admin(message.from_user.id):
             bot.send_message(message.from_user.id, 'Вы администратор!',
                              reply_markup=BuildMarkup.menu(message.from_user.id))

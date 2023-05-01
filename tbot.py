@@ -97,32 +97,46 @@ class CreateCourse:
             bot.send_message(message.from_user.id, str(exp))
 
 
+class SelectCourse:
+
+    @staticmethod
+    def step1(message: telebot.types.Message,
+              callback_func: Callable[[telebot.types.Message, int], None],
+              post_message: str | None):
+        bot.send_message(message.from_user.id,
+                         'Выберите курс:',
+                          reply_markup=BuildMarkup.select_course())
+        bot.register_next_step_handler(message, SelectCourse.step2, callback_func, post_message)
+
+    @staticmethod
+    def step2(message: telebot.types.Message,
+              callback_func: Callable[[telebot.types.Message, int], None],
+              post_message: str | None):
+        try:
+            course_name = message.text
+            course_id = database_funcs.get_course_id(course_name)
+            if post_message is not None:
+                bot.send_message(message.from_user.id,
+                                 post_message)
+                bot.register_next_step_handler(message, callback_func, course_id)
+            else:
+                callback_func(message, course_id)
+        except Exception as exp:
+            bot.send_message(message.from_user.id, str(exp))
+
+
 class EditCourseName:
 
     @bot.message_handler(commands=['edit_course_name'])
     @staticmethod
     def step1(message: telebot.types.Message):
         if is_admin(message.from_user.id):
-            bot.send_message(message.from_user.id,
-                             'Выберите курс:',
-                             reply_markup=BuildMarkup.select_course())
-            bot.register_next_step_handler(message, EditCourseName.step2)
+            SelectCourse.step1(message, EditCourseName.step2, 'Введите новое имя:')
         else:
             bot.send_message(message.from_user.id, 'Вы не администратор.')
 
     @staticmethod
-    def step2(message: telebot.types.Message):
-        try:
-            course_name = message.text
-            course_id = database_funcs.get_course_id(course_name)
-            bot.send_message(message.from_user.id,
-                             'Введите новое название:')
-            bot.register_next_step_handler(message, EditCourseName.step3, course_id)
-        except Exception as exp:
-            bot.send_message(message.from_user.id, str(exp))
-
-    @staticmethod
-    def step3(message: telebot.types.Message,
+    def step2(message: telebot.types.Message,
               course_id: int):
         try:
             new_name = message.text
@@ -140,26 +154,12 @@ class EditCourseDescription:
     @staticmethod
     def step1(message: telebot.types.Message):
         if is_admin(message.from_user.id):
-            bot.send_message(message.from_user.id,
-                             'Выберите курс:',
-                             reply_markup=BuildMarkup.select_course())
-            bot.register_next_step_handler(message, EditCourseDescription.step2)
+            SelectCourse.step1(message, EditCourseDescription.step2, 'Введите новое описание:')
         else:
             bot.send_message(message.from_user.id, 'Вы не администратор.')
 
     @staticmethod
-    def step2(message: telebot.types.Message):
-        try:
-            course_name = message.text
-            course_id = database_funcs.get_course_id(course_name)
-            bot.send_message(message.from_user.id,
-                             'Введите новое описание:')
-            bot.register_next_step_handler(message, EditCourseDescription.step3, course_id)
-        except Exception as exp:
-            bot.send_message(message.from_user.id, str(exp))
-
-    @staticmethod
-    def step3(message: telebot.types.Message,
+    def step2(message: telebot.types.Message,
               course_id: int):
         try:
             new_description = message.text
@@ -177,26 +177,12 @@ class EditCoursePrice:
     @staticmethod
     def step1(message: telebot.types.Message):
         if is_admin(message.from_user.id):
-            bot.send_message(message.from_user.id,
-                             'Выберите курс:',
-                             reply_markup=BuildMarkup.select_course())
-            bot.register_next_step_handler(message, EditCoursePrice.step2)
+            SelectCourse.step1(message, EditCoursePrice.step2, 'Введите новую цену:')
         else:
             bot.send_message(message.from_user.id, 'Вы не администратор.')
 
     @staticmethod
-    def step2(message: telebot.types.Message):
-        try:
-            course_name = message.text
-            course_id = database_funcs.get_course_id(course_name)
-            bot.send_message(message.from_user.id,
-                             'Введите новую цену:')
-            bot.register_next_step_handler(message, EditCoursePrice.step3, course_id)
-        except Exception as exp:
-            bot.send_message(message.from_user.id, str(exp))
-
-    @staticmethod
-    def step3(message: telebot.types.Message,
+    def step2(message: telebot.types.Message,
               course_id: int):
         try:
             new_price = int(message.text)
@@ -214,21 +200,17 @@ class DeleteCourse:
     @staticmethod
     def step1(message: telebot.types.Message):
         if is_admin(message.from_user.id):
-            bot.send_message(message.from_user.id,
-                             'Выберите курс:',
-                             reply_markup=BuildMarkup.select_course())
-            bot.register_next_step_handler(message, DeleteCourse.step2)
+            SelectCourse.step1(message, DeleteCourse.step2, None)
         else:
             bot.send_message(message.from_user.id, 'Вы не администратор.')
 
     @staticmethod
-    def step2(message: telebot.types.Message):
+    def step2(message: telebot.types.Message,
+              course_id: int):
         try:
-            course_name = message.text
-            course_id = database_funcs.get_course_id(course_name)
             database_funcs.delete_course(course_id)
             bot.send_message(message.from_user.id, 'Курс удален.',
-                             reply_markup=BuildMarkup.menu())
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
         except Exception as exp:
             bot.send_message(message.from_user.id, str(exp))
 
@@ -476,6 +458,40 @@ class DeleteLesson:
             bot.send_message(message.from_user.id, str(exp))
 
 
+class ViewCourses:
+
+    @bot.message_handler(commands=['view_courses'])
+    @staticmethod
+    def step1(message: telebot.types.Message):
+        courses = database_funcs.get_courses()
+        to_text = 'Список доступных курсов:'
+        for c in courses:
+            to_text += f'\n\n{c.name}\n{c.description}'
+        bot.send_message(message.from_user.id, to_text)
+
+
+class ViewCourse:
+
+    @bot.message_handler(commands=['view_course'])
+    @staticmethod
+    def step1(message: telebot.types.Message):
+        SelectCourse.step1(message, ViewCourse.step2, None)
+
+    @staticmethod
+    def step2(message: telebot.types.Message,
+              course_id: int):
+        try:
+            to_text = database_funcs.get_course_description(course_id)
+            lessons = database_funcs.get_lessons_by_course(course_id)
+            lessons.sort(key=lambda l: l.date)
+            for num, l in enumerate(lessons):
+                to_text += f'\n\n{num + 1}. {l.name}\n{l.description}\nДата: {l.date}'
+            bot.send_message(message.from_user.id, to_text,
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
+        except Exception as exp:
+            bot.send_message(message.from_user.id, str(exp))
+
+
 class BotMain:
 
     @bot.message_handler(commands=['start'])
@@ -489,9 +505,15 @@ class BotMain:
 
     @bot.message_handler(content_types=['text'])
     def any_text(message: telebot.types.Message):
-        bot.send_message(message.from_user.id,
-                         'Не распознано',
-                         reply_markup=BuildMarkup.menu(message.from_user.id))
+
+        if message.text == 'Обзор курсов':
+            ViewCourses.step1(message)
+        elif message.text == 'Обзор лекций':
+            ViewCourse.step1(message)
+        else:
+            bot.send_message(message.from_user.id,
+                            'Не распознано',
+                            reply_markup=BuildMarkup.menu(message.from_user.id))
 
 
 bot.polling()

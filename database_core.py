@@ -18,8 +18,8 @@ class User(Base):
     telegram_id = Column(Integer, unique=True, nullable=False)
 
 
-class Cource(Base):
-    __tablename__ = 'Cources'
+class Course(Base):
+    __tablename__ = 'Courses'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     description = Column(String)
@@ -29,7 +29,7 @@ class Lesson(Base):
     __tablename__ = 'Lessons'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    cource_id = Column(Integer, ForeignKey('Cources.id'))
+    course_id = Column(Integer, ForeignKey('Courses.id'))
     description = Column(String)
     date = Column(DateTime, nullable=False)
 

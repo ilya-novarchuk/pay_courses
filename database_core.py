@@ -3,6 +3,7 @@
 import sqlalchemy
 import sqlalchemy.orm
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import UniqueConstraint
 
 import config
 
@@ -22,7 +23,9 @@ class Course(Base):
     __tablename__ = 'Courses'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String, unique=True)
     description = Column(String)
+    price = Column(Integer)
 
 
 class Lesson(Base):
@@ -30,8 +33,14 @@ class Lesson(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     course_id = Column(Integer, ForeignKey('Courses.id'))
+    name = Column(String)
     description = Column(String)
+    price = Column(Integer, nullable=False)
     date = Column(DateTime, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint('course_id', 'name', name='_uniq'),
+    )
 
 
 class Payment(Base):

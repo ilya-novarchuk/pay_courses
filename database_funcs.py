@@ -13,18 +13,40 @@ from database_core import *
 # # #
 
 
-def create_course(description: str):
+def create_course(name: str,
+                  description: str,
+                  price: int):
     with Session(autoflush=True, bind=engine) as session:
-        course = Course(description=description)
+        course = Course(
+            name=name,
+            description=description,
+            price=price
+        )
         session.add(course)
         session.commit()
 
 
-def edit_course(id: int, description: str):
+def edit_course_name(id: int, new_name: str):
     with Session(autoflush=True, bind=engine) as session:
         course = session.query(Course).filter(Course.id == id).first()
         assert course is not None, 'Course is not exists'
-        course.description = description
+        course.name = new_name
+        session.commit()
+
+
+def edit_course_description(id: int, new_description: str):
+    with Session(autoflush=True, bind=engine) as session:
+        course = session.query(Course).filter(Course.id == id).first()
+        assert course is not None, 'Course is not exists'
+        course.description = new_description
+        session.commit()
+
+
+def edit_course_price(id: int, new_price: int):
+    with Session(autoflush=True, bind=engine) as session:
+        course = session.query(Course).filter(Course.id == id).first()
+        assert course is not None, 'Course is not exists'
+        course.price = new_price
         session.commit()
 
 
@@ -36,6 +58,12 @@ def delete_course(id: int):
         course = session.query(Course).filter(Course.id == id).first()
         session.delete(course)
         session.commit()
+
+
+def get_course_id(name: str) -> int:
+    with Session(autoflush=True, bind=engine) as session:
+        course = session.query(Course).filter(Course.name == name).first()
+        return course.id
 
 
 def get_courses() -> List[Course]:

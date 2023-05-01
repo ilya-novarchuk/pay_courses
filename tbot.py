@@ -1,6 +1,5 @@
 
 
-import dateparser
 import telebot
 
 import config
@@ -16,228 +15,109 @@ def is_admin(id: int | str) -> bool:
     return id in config.TELEGRAM_ADMINS
 
 
-# # #
-# # # COURSE MANAGMENT
-# # #
+class BuildMarkup:
+
+    def space() -> telebot.types.ReplyKeyboardMarkup:
+        return telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
+
+    def menu(id) -> telebot.types.ReplyKeyboardMarkup:
+        markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
+        btns = []
+        if is_admin(id):
+            btns.append(telebot.types.KeyboardButton('/create_course'))
+            btns.append(telebot.types.KeyboardButton('/edit_course_name'))
+            btns.append(telebot.types.KeyboardButton('/edit_course_description'))
+            btns.append(telebot.types.KeyboardButton('/edit_course_price'))
+            btns.append(telebot.types.KeyboardButton('/delete_corse'))
+            btns.append(telebot.types.KeyboardButton('/create_lesson'))
+            btns.append(telebot.types.KeyboardButton('/edit_lesson_name'))
+            btns.append(telebot.types.KeyboardButton('/edit_lesson_description'))
+            btns.append(telebot.types.KeyboardButton('/edit_lesson_price'))
+            btns.append(telebot.types.KeyboardButton('/edit_lesson_date'))
+            btns.append(telebot.types.KeyboardButton('/delete_lesson'))
+        btns.append('Обзор курсов')
+        btns.append('Обзор лекций')
+        markup.add(*btns)
+        return markup
+
+    def select_course() -> telebot.types.ReplyKeyboardMarkup:
+        markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
+        courses = database_funcs.get_courses()
+        btns = [telebot.types.KeyboardButton(c.name) for c in courses]
+        markup.add(*btns)
+        return markup
 
 
-@bot.message_handler(commands=['create_course'])
-def create_course(message: telebot.types.Message):
-    if is_admin(message.from_user.id):
-        bot.send_message(message.from_user.id, 'Введите описание курса:')
-        bot.register_next_step_handler(message, write_course_description)
-    else:
-        bot.send_message(message.from_user.id, 'Вы не администратор.')
+class CreateCourse:
 
-
-def write_course_description(message: telebot.types.Message):
-    description = message.text
-    database_funcs.create_course(description)
-    bot.send_message(message.from_user.id, 'Курс создан.')
-
-
-@bot.message_handler(commands=['edit_course'])
-def edit_course(message: telebot.types.Message):
-    if is_admin(message.from_user.id):
-        bot.send_message(message.from_user.id, 'Введите id курса:')
-        bot.register_next_step_handler(message, edit_course_read_id)    
-    else:
-        bot.send_message(message.from_user.id, 'Вы не администратор.')
-
-
-def edit_course_read_id(message: telebot.types.Message):
-    bot.send_message(message.from_user.id, 'Введите новое описание:')
-    id = int(message.text)
-    bot.register_next_step_handler(message, edit_course_read_description, id)
-
-
-def edit_course_read_description(message: telebot.types.Message, id: int):
-    description = message.text
-    try:
-        database_funcs.edit_course(id, description)
-        bot.send_message(message.from_user.id, 'Описание курса обновлено.')
-    except Exception as exp:
-        bot.send_message(message.from_user.id, str(exp))
-
-
-@bot.message_handler(commands=['delete_course'])
-def delete_course(message: telebot.types.Message):
-    if is_admin(message.from_user.id):
-        bot.send_message(message.from_user.id, 'Введите id курса:')
-        bot.register_next_step_handler(message, delete_course_read_id)
-    else:
-        bot.send_message(message.from_user.id, 'Вы не администратор.')
-
-
-def delete_course_read_id(message: telebot.types.Message):
-    id = int(message.text)
-    database_funcs.delete_course(id)
-    bot.send_message(message.from_user.id, 'Курс со всеми лекциями удален')
-
-# # #
-# # # COURSE MANAGMENT END
-# # #
-
-
-# # #
-# # # LESSON MANAGMENT
-# # #
-
-
-@bot.message_handler(commands=['create_lesson'])
-def create_lesson(message: telebot.types.Message):
-    if is_admin(message.from_user.id):
-        bot.send_message(message.from_user.id, 'Введите id курса:')
-        bot.register_next_step_handler(message, create_lesson_read_id)
-    else:
-        bot.send_message(message.from_user.id, 'Вы не администратор.')
-
-
-def create_lesson_read_id(message: telebot.types.Message):
-    try:
-        id = int(message.text)
-        if database_funcs.course_exist(id):
-            bot.send_message(message.from_user.id, 'Введите описание:')
-            bot.register_next_step_handler(message, create_lesson_read_description, id)
+    @bot.message_handler(commands=['create_course'])
+    @staticmethod
+    def step1(message: telebot.types.Message):
+        if is_admin(message.from_user.id):
+            bot.send_message(message.from_user.id,
+                            'Введите название курса:')
+            bot.register_next_step_handler(message, CreateCourse.step2)
         else:
-            bot.send_message(message.from_user.id, 'Курс не существует.')
-    except Exception as exp:
-        bot.send_message(message.from_user.id, str(exp))
+            bot.send_message(message.from_user.id, 'Вы не администратор.')
+
+    @staticmethod
+    def step2(message: telebot.types.Message):
+        name = message.text
+        bot.send_message(message.from_user.id,
+                        'Введите описание курса:')
+        bot.register_next_step_handler(message, CreateCourse.step3, name)
+
+    @staticmethod
+    def step3(message: telebot.types.Message,
+              name: str):
+        description = message.text
+        bot.send_message(message.from_user.id,
+                        'Введите цену за весь курс:')
+        bot.register_next_step_handler(message, CreateCourse.step4,
+                                       name, description)
+
+    @staticmethod
+    def step4(message: telebot.types.Message,
+              name: str,
+              description: str):
+        try:
+            price = int(message.text)
+            database_funcs.create_course(name, description, price)
+            bot.send_message(message.from_user.id,
+                            'Курс создан.',
+                            reply_markup=BuildMarkup.menu(message.from_user.id))
+        except Exception as exp:
+            bot.send_message(message.from_user.id, str(exp))
 
 
-def create_lesson_read_description(message: telebot.types.Message, id: int):
-    description = message.text
-    bot.send_message(message.from_user.id, 'Введите дату:')
-    bot.register_next_step_handler(message, create_lesson_read_date, id, description)
+class EditCourseName:
+    pass
 
 
-def create_lesson_read_date(message: telebot.types.Message,
-                            id: int,
-                            description: str):
-    try:
-        date = dateparser.parse(message.text)
-        database_funcs.create_lesson(id, description, date)
-        bot.send_message(message.from_user.id, 'Лекция создана.')
-    except Exception as exp:
-        bot.send_message(message.from_user.id, str(exp))
+class EditCourseDescription:
+    pass
 
 
-@bot.message_handler(commands=['edit_lesson'])
-def edit_lesson(message: telebot.types.Message):
-    if is_admin(message.from_user.id):
-        bot.send_message(message.from_user.id, 'Введите id курса:')
-        bot.register_next_step_handler(message, edit_lesson_read_id)
-    else:
-        bot.send_message(message.from_user.id, 'Вы не администратор.')
+class EditCoursePrice:
+    pass
 
 
-def edit_lesson_read_id(message: telebot.types.Message):
-    id = int(message.text)
-    if database_funcs.lesson_exist(id):
-        bot.send_message(message.from_user.id, 'Введите новое описание:')
-        bot.register_next_step_handler(message, edit_lesson_read_description, id)
-    else:
-        bot.send_message(message.from_user.id, 'Лекция не существует.')
+class BotMain:
+
+    @bot.message_handler(commands=['start'])
+    def start(message: telebot.types.Message):
+        if is_admin(message.from_user.id):
+            bot.send_message(message.from_user.id, 'Вы администратор!',
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
+        else:
+            bot.send_message(message.from_user.id, 'Добро пожаловать!',
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
+
+    @bot.message_handler(content_types=['text'])
+    def any_text(message: telebot.types.Message):
+        bot.send_message(message.from_user.id,
+                         'Не распознано',
+                         reply_markup=BuildMarkup.menu(message.from_user.id))
 
 
-def edit_lesson_read_description(message: telebot.types.Message,
-                                 id: int):
-    description = message.text
-    bot.send_message(message.from_user.id, 'Введите новую дату:')
-    bot.register_next_step_handler(message, edit_lesson_read_date, id, description)
-
-
-def edit_lesson_read_date(message: telebot.types.Message,
-                          id: int,
-                          description: str):
-    date = dateparser.parse(message.text)
-    try:
-        database_funcs.edit_lesson(id, description, date)
-        bot.send_message(message.from_user.id, 'Лекция обновлена.')
-    except Exception as exp:
-        bot.send_message(message.from_user.id, str(exp))
-
-
-@bot.message_handler(commands=['delete_lesson'])
-def delete_lesson(message: telebot.types.Message):
-    if is_admin(message.from_user.id):
-        bot.send_message(message.from_user.id, 'Введите id лекции:')
-        bot.register_next_step_handler(message, delete_lesson_read_id)
-    else:
-        bot.send_message(message.from_user.id, 'Вы не администратор.')
-
-
-def delete_lesson_read_id(message: telebot.types.Message):
-    id = int(message.text)
-    if database_funcs.lesson_exist(id):
-        database_funcs.delete_lesson(id)
-        bot.send_message(message.from_user.id, 'Лекция удалена.')
-    else:
-        bot.send_message(message.from_user.id, 'Лекция не существует.')
-
-
-# # #
-# # # LESSON MANAGMENT END
-# # #
-
-
-# # #
-# # # VIEW
-# # #
-
-
-@bot.message_handler(commands=['view_courses'])
-def view_courses(message: telebot.types.Message):
-    courses = database_funcs.get_courses()
-    to_text = 'Список доступных курсов:'
-    for c in courses:
-        to_text += f'\n\n{c.description}\n(id курса: {c.id})'
-    bot.send_message(message.from_user.id, to_text)
-
-
-@bot.message_handler(commands=['view_course'])
-def view_course(message: telebot.types.Message):
-    bot.send_message(message.from_user.id, 'Введите id курса:')
-    bot.register_next_step_handler(message, view_course_read_id)
-
-
-def view_course_read_id(message: telebot.types.Message):
-    id = int(message.text)
-    try:
-        to_text = database_funcs.get_course_description(id)
-        lessons = database_funcs.get_lessons_by_course(id)
-        for num, l in enumerate(lessons):
-            to_text += f'\n\n{num + 1}. {l.description}\nДата: {l.date}\n(id лекции: {l.id})'
-        bot.send_message(message.from_user.id, to_text)
-    except Exception as exp:
-        bot.send_message(message.from_user.id, str(exp))
-
-
-@bot.message_handler(commands=['admin_view_courses'])
-def admin_view_courses(message: telebot.types.Message):
-    courses = database_funcs.get_courses()
-    courses = [f'id: {c.id}\ndescription: {c.description}' for c in courses]
-    to_text = '\n\n'.join(courses)
-    bot.send_message(message.from_user.id, to_text)
-
-
-@bot.message_handler(commands=['admin_view_lessons'])
-def admin_view_lessons(message: telebot.types.Message):
-    lessons = database_funcs.get_lessons()
-    lessons = [
-        f'id: {l.id}\ncourse: {l.course_id}\ndescription: {l.description}\ndate: {l.date}'
-        for l in lessons
-    ]
-    to_text = '\n\n'.join(lessons)
-    bot.send_message(message.from_user.id, to_text)
-
-
-# # #
-# # # VIEW END
-# # #
-
-
-#for admin in config.TELEGRAM_ADMINS:
-#    bot.send_message(admin, 'Start')
 bot.polling()
-

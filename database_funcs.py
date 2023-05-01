@@ -43,6 +43,13 @@ def get_courses() -> List[Course]:
         return session.query(Course).all()
 
 
+def get_course_description(id: int) -> str:
+    with Session(autoflush=True, bind=engine) as session:
+        course = session.query(Course).filter(Course.id == id).all()
+        assert len(course) == 1, 'Курс не существует'
+        return course[0].description
+
+
 def course_exist(id: int) -> bool:
     with Session(autoflush=True, bind=engine) as session:
         cources = session.query(Course).filter(Course.id == id).all()
@@ -93,6 +100,11 @@ def delete_lesson(id: int):
 def get_lessons() -> List[Lesson]:
     with Session(autoflush=True, bind=engine) as session:
         return session.query(Lesson).all()
+
+
+def get_lessons_by_course(course_id: int) -> List[Lesson]:
+    with Session(autoflush=True, bind=engine) as session:
+        return session.query(Lesson).filter(Lesson.course_id == course_id).all()
 
 
 def lesson_exist(id: int) -> bool:

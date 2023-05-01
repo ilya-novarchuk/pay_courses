@@ -181,6 +181,38 @@ def delete_lesson_read_id(message: telebot.types.Message):
 # # #
 
 
+# # #
+# # # VIEW
+# # #
+
+
+@bot.message_handler(commands=['view_courses'])
+def view_courses(message: telebot.types.Message):
+    courses = database_funcs.get_courses()
+    to_text = 'Список доступных курсов:'
+    for c in courses:
+        to_text += f'\n\n{c.description}\n(id курса: {c.id})'
+    bot.send_message(message.from_user.id, to_text)
+
+
+@bot.message_handler(commands=['view_course'])
+def view_course(message: telebot.types.Message):
+    bot.send_message(message.from_user.id, 'Введите id курса:')
+    bot.register_next_step_handler(message, view_course_read_id)
+
+
+def view_course_read_id(message: telebot.types.Message):
+    id = int(message.text)
+    try:
+        to_text = database_funcs.get_course_description(id)
+        lessons = database_funcs.get_lessons_by_course(id)
+        for num, l in enumerate(lessons):
+            to_text += f'\n\n{num + 1}. {l.description}\nДата: {l.date}\n(id лекции: {l.id})'
+        bot.send_message(message.from_user.id, to_text)
+    except Exception as exp:
+        bot.send_message(message.from_user.id, str(exp))
+
+
 @bot.message_handler(commands=['admin_view_courses'])
 def admin_view_courses(message: telebot.types.Message):
     courses = database_funcs.get_courses()
@@ -198,6 +230,11 @@ def admin_view_lessons(message: telebot.types.Message):
     ]
     to_text = '\n\n'.join(lessons)
     bot.send_message(message.from_user.id, to_text)
+
+
+# # #
+# # # VIEW END
+# # #
 
 
 #for admin in config.TELEGRAM_ADMINS:

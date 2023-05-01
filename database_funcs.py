@@ -63,6 +63,7 @@ def delete_course(id: int):
 def get_course_id(name: str) -> int:
     with Session(autoflush=True, bind=engine) as session:
         course = session.query(Course).filter(Course.name == name).first()
+        assert course is not None, 'Course is not exists'
         return course.id
 
 
@@ -96,24 +97,50 @@ def course_exist(id: int) -> bool:
 
 
 def create_lesson(course_id: int,
+                  name: str,
                   description: str,
+                  price: int,
                   date: datetime):
     with Session(autoflush=True, bind=engine) as session:
         lesson = Lesson(
             course_id=course_id,
+            name=name,
             description=description,
+            price=price,
             date=date
         )
         session.add(lesson)
         session.commit()
 
 
-def edit_lesson(id: int,
-                new_description: str,
-                new_date: datetime):
+def edit_lesson_name(id: int, new_name: str):
     with Session(autoflush=True, bind=engine) as session:
         lesson = session.query(Lesson).filter(Lesson.id == id).first()
+        assert lesson is not None, 'Course is not exists'
+        lesson.name = new_name
+        session.commit()
+
+
+def edit_lesson_description(id: int, new_description: str):
+    with Session(autoflush=True, bind=engine) as session:
+        lesson = session.query(Lesson).filter(Lesson.id == id).first()
+        assert lesson is not None, 'Course is not exists'
         lesson.description = new_description
+        session.commit()
+
+
+def edit_lesson_price(id: int, new_price: int):
+    with Session(autoflush=True, bind=engine) as session:
+        lesson = session.query(Lesson).filter(Lesson.id == id).first()
+        assert lesson is not None, 'Course is not exists'
+        lesson.price = new_price
+        session.commit()
+
+
+def edit_lesson_date(id: int, new_date: datetime):
+    with Session(autoflush=True, bind=engine) as session:
+        lesson = session.query(Lesson).filter(Lesson.id == id).first()
+        assert lesson is not None, 'Course is not exists'
         lesson.date = new_date
         session.commit()
 
@@ -123,6 +150,16 @@ def delete_lesson(id: int):
         lesson = session.query(Lesson).filter(Lesson.id == id).first()
         session.delete(lesson)
         session.commit()
+
+
+def get_lesson_id(course_id: int,
+                  lesson_name: str
+                  ) -> int:
+    with Session(autoflush=True, bind=engine) as session:
+        lesson = session.query(Lesson).filter(
+            Lesson.course_id == course_id and Lesson.name == lesson_name).first()
+        assert lesson is not None, 'Lesson is not exist'
+        return lesson.id
 
 
 def get_lessons() -> List[Lesson]:

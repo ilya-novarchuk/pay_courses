@@ -20,6 +20,7 @@ def is_admin(id: int | str) -> bool:
 
 class BuildMarkup:
 
+    @staticmethod
     def menu(id) -> telebot.types.ReplyKeyboardMarkup:
         markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
         btns = []
@@ -40,6 +41,7 @@ class BuildMarkup:
         markup.add(*btns)
         return markup
 
+    @staticmethod
     def select_course() -> telebot.types.ReplyKeyboardMarkup:
         markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
         courses = database_funcs.get_courses()
@@ -47,6 +49,7 @@ class BuildMarkup:
         markup.add(*btns)
         return markup
 
+    @staticmethod
     def select_lesson(course_id: int) -> telebot.types.ReplyKeyboardMarkup:
         markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
         lessons = database_funcs.get_lessons_by_course(course_id)
@@ -301,6 +304,7 @@ class CreateLesson:
 
 class SelectLesson:
 
+    @staticmethod
     def step1(message: telebot.types.Message,
               callback_func: Callable[[telebot.types.Message, int | None], None],
               post_message: str):
@@ -310,6 +314,7 @@ class SelectLesson:
         bot.register_next_step_handler(message, SelectLesson.step2,
                                        callback_func, post_message)
 
+    @staticmethod
     def step2(message: telebot.types.Message,
               callback_func: Callable[[telebot.types.Message, int | None], None],
               post_message: str):
@@ -327,6 +332,7 @@ class SelectLesson:
         except Exception as exp:
             bot.send_message(message.from_user.id, str(exp))
 
+    @staticmethod
     def step3(message: telebot.types.Message,
               course_id: int,
               callback_fund: Callable[[telebot.types.Message, int | None], None],
@@ -495,6 +501,7 @@ class ViewCourse:
 class BotMain:
 
     @bot.message_handler(commands=['start'])
+    @staticmethod
     def start(message: telebot.types.Message):
         database_funcs.add_user(str(message.from_user.id))
         if is_admin(message.from_user.id):
@@ -505,6 +512,7 @@ class BotMain:
                              reply_markup=BuildMarkup.menu(message.from_user.id))
 
     @bot.message_handler(content_types=['text'])
+    @staticmethod
     def any_text(message: telebot.types.Message):
 
         if message.text == 'Обзор курсов':

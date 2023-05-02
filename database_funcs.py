@@ -33,7 +33,7 @@ def create_course(name: str,
 def edit_course_name(id: int, new_name: str):
     with Session(autoflush=True, bind=engine) as session:
         course = session.query(Course).filter(Course.id == id).first()
-        assert course is not None, 'Course is not exists'
+        assert course is not None, 'Курс не найден'
         course.name = new_name
         session.commit()
 
@@ -41,7 +41,7 @@ def edit_course_name(id: int, new_name: str):
 def edit_course_description(id: int, new_description: str):
     with Session(autoflush=True, bind=engine) as session:
         course = session.query(Course).filter(Course.id == id).first()
-        assert course is not None, 'Course is not exists'
+        assert course is not None, 'Курс не найден'
         course.description = new_description
         session.commit()
 
@@ -49,7 +49,7 @@ def edit_course_description(id: int, new_description: str):
 def edit_course_price(id: int, new_price: int):
     with Session(autoflush=True, bind=engine) as session:
         course = session.query(Course).filter(Course.id == id).first()
-        assert course is not None, 'Course is not exists'
+        assert course is not None, 'Курс не найден'
         course.price = new_price
         session.commit()
 
@@ -67,21 +67,21 @@ def delete_course(id: int):
 def get_course_id(name: str) -> int:
     with Session(autoflush=True, bind=engine) as session:
         course = session.query(Course).filter(Course.name == name).first()
-        assert course is not None, 'Course is not exists'
+        assert course is not None, 'Курс не найден'
         return course.id
 
 
 def get_course_name(course_id: int) -> str:
     with Session(autoflush=True, bind=engine) as session:
         course = session.query(Course).filter(Course.id == course_id).first()
-        assert course is not None, 'Course is not exists'
+        assert course is not None, 'Курс не найден'
         return course.name
 
 
 def get_course_price(course_id: int) -> int:
     with Session(autoflush=True, bind=engine) as session:
         course = session.query(Course).filter(Course.id == course_id).first()
-        assert course is not None, 'Course is not exists'
+        assert course is not None, 'Курс не найден'
         return course.price
 
 
@@ -93,7 +93,7 @@ def get_courses() -> List[Course]:
 def get_course_description(id: int) -> str:
     with Session(autoflush=True, bind=engine) as session:
         course = session.query(Course).filter(Course.id == id).all()
-        assert len(course) == 1, 'Курс не существует'
+        assert len(course) == 1, 'Курс не найден'
         return course[0].description
 
 
@@ -142,7 +142,7 @@ def create_lesson(course_id: int,
 def edit_lesson_name(id: int, new_name: str):
     with Session(autoflush=True, bind=engine) as session:
         lesson = session.query(Lesson).filter(Lesson.id == id).first()
-        assert lesson is not None, 'Course is not exists'
+        assert lesson is not None, 'Лекция не найдена'
         lesson.name = new_name
         session.commit()
 
@@ -150,7 +150,7 @@ def edit_lesson_name(id: int, new_name: str):
 def edit_lesson_description(id: int, new_description: str):
     with Session(autoflush=True, bind=engine) as session:
         lesson = session.query(Lesson).filter(Lesson.id == id).first()
-        assert lesson is not None, 'Course is not exists'
+        assert lesson is not None, 'Лекция не найдена'
         lesson.description = new_description
         session.commit()
 
@@ -158,7 +158,7 @@ def edit_lesson_description(id: int, new_description: str):
 def edit_lesson_price(id: int, new_price: int):
     with Session(autoflush=True, bind=engine) as session:
         lesson = session.query(Lesson).filter(Lesson.id == id).first()
-        assert lesson is not None, 'Course is not exists'
+        assert lesson is not None, 'Лекция не найдена'
         lesson.price = new_price
         session.commit()
 
@@ -166,7 +166,7 @@ def edit_lesson_price(id: int, new_price: int):
 def edit_lesson_date(id: int, new_date: datetime):
     with Session(autoflush=True, bind=engine) as session:
         lesson = session.query(Lesson).filter(Lesson.id == id).first()
-        assert lesson is not None, 'Course is not exists'
+        assert lesson is not None, 'Лекция не найдена'
         lesson.date = new_date
         session.commit()
 
@@ -182,7 +182,7 @@ def get_lesson(lesson_id: int,
                ) -> Lesson:
     with Session(autoflush=True, bind=engine) as session:
         lesson = session.query(Lesson).filter(Lesson.id == lesson_id).first()
-        assert lesson is not None, 'Lesson is not exist'
+        assert lesson is not None, 'Лекция не найдена'
         return lesson
 
 
@@ -191,7 +191,7 @@ def get_lesson_id(course_id: int,
                   ) -> int:
     with Session(autoflush=True, bind=engine) as session:
         lesson = session.query(Lesson).filter(Lesson.course_id == course_id).filter(Lesson.name == lesson_name).first()
-        assert lesson is not None, 'Lesson is not exist'
+        assert lesson is not None, 'Лекция не найдена'
         return lesson.id
 
 
@@ -199,7 +199,7 @@ def get_lesson_course(lesson_id: int) -> int:
     with Session(autoflush=True, bind=engine) as session:
         lesson = session.query(Lesson).filter(
             Lesson.id == lesson_id).first()
-        assert lesson is not None, 'Lesson is not exist'
+        assert lesson is not None, 'Лекция не найдена'
         return lesson.course_id
 
 
@@ -207,14 +207,14 @@ def get_lesson_name(lesson_id: int) -> str:
     with Session(autoflush=True, bind=engine) as session:
         lesson = session.query(Lesson).filter(
             Lesson.id == lesson_id).first()
-        assert lesson is not None, 'Lesson is not exist'
+        assert lesson is not None, 'Лекция не найдена'
         return lesson.name
 
 def get_lesson_price(lesson_id: int) -> int:
     with Session(autoflush=True, bind=engine) as session:
         lesson = session.query(Lesson).filter(
             Lesson.id == lesson_id).first()
-        assert lesson is not None, 'Lesson is not exist'
+        assert lesson is not None, 'Лекция не найдена'
         return lesson.price
 
 

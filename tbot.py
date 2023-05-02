@@ -133,7 +133,9 @@ class SelectCourse:
             else:
                 callback_func(message, course_id)
         except Exception as exp:
-            bot.send_message(message.from_user.id, str(exp))
+            bot.send_message(message.from_user.id,
+                             str(exp),
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
 
 
 class EditCourseName:
@@ -156,7 +158,9 @@ class EditCourseName:
                              'Имя курса обновлено.',
                              reply_markup=BuildMarkup.menu(message.from_user.id))
         except Exception as exp:
-            bot.send_message(message.from_user.id, str(exp))
+            bot.send_message(message.from_user.id,
+                             str(exp),
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
 
 
 class EditCourseDescription:
@@ -179,7 +183,9 @@ class EditCourseDescription:
                              'Описание курса обновлено.',
                              reply_markup=BuildMarkup.menu(message.from_user.id))
         except Exception as exp:
-            bot.send_message(message.from_user.id, str(exp))
+            bot.send_message(message.from_user.id,
+                             str(exp),
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
 
 
 class EditCoursePrice:
@@ -202,7 +208,9 @@ class EditCoursePrice:
                              'Цена курса обновлена.',
                              reply_markup=BuildMarkup.menu(message.from_user.id))
         except Exception as exp:
-            bot.send_message(message.from_user.id, str(exp))
+            bot.send_message(message.from_user.id,
+                             str(exp),
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
 
 
 class DeleteCourse:
@@ -223,7 +231,9 @@ class DeleteCourse:
             bot.send_message(message.from_user.id, 'Курс удален.',
                              reply_markup=BuildMarkup.menu(message.from_user.id))
         except Exception as exp:
-            bot.send_message(message.from_user.id, str(exp))
+            bot.send_message(message.from_user.id,
+                             str(exp),
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
 
 
 class CreateLesson:
@@ -248,7 +258,9 @@ class CreateLesson:
                             'Введите название лекции:')
             bot.register_next_step_handler(message, CreateLesson.step3, course_id)
         except Exception as exp:
-            bot.send_message(message.from_user.id, str(exp))
+            bot.send_message(message.from_user.id,
+                             str(exp),
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
 
     @staticmethod
     def step3(message: telebot.types.Message,
@@ -286,7 +298,9 @@ class CreateLesson:
                                            lesson_description,
                                            price)
         except Exception as exp:
-            bot.send_message(message.from_user.id, str(exp))
+            bot.send_message(message.from_user.id,
+                             str(exp),
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
 
     @staticmethod
     def step6(message: telebot.types.Message,
@@ -307,7 +321,9 @@ class CreateLesson:
                              'Лекция создана.',
                              reply_markup=BuildMarkup.menu(message.from_user.id))
         except Exception as exp:
-            bot.send_message(message.from_user.id, str(exp))
+            bot.send_message(message.from_user.id,
+                             str(exp),
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
 
 
 class SelectLesson:
@@ -338,7 +354,9 @@ class SelectLesson:
                                            callback_func,
                                            post_message)
         except Exception as exp:
-            bot.send_message(message.from_user.id, str(exp))
+            bot.send_message(message.from_user.id,
+                             str(exp),
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
 
     @staticmethod
     def step3(message: telebot.types.Message,
@@ -356,7 +374,9 @@ class SelectLesson:
             else:
                 callback_func(message, lesson_id)
         except Exception as exp:
-            bot.send_message(message.from_user.id, str(exp))
+            bot.send_message(message.from_user.id,
+                             str(exp),
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
 
 
 class EditLessonName:
@@ -379,7 +399,9 @@ class EditLessonName:
                              'Название лекции обновлено.',
                              reply_markup=BuildMarkup.menu(message.from_user.id))
         except Exception as exp:
-            bot.send_message(message.from_user.id, str(exp))
+            bot.send_message(message.from_user.id,
+                             str(exp),
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
 
 
 class EditLessonDescription:
@@ -402,7 +424,9 @@ class EditLessonDescription:
                              'Описание лекции обновлено.',
                              reply_markup=BuildMarkup.menu(message.from_user.id))
         except Exception as exp:
-            bot.send_message(message.from_user.id, str(exp))
+            bot.send_message(message.from_user.id,
+                             str(exp),
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
 
 class EditLessonPrice:
 
@@ -424,7 +448,9 @@ class EditLessonPrice:
                              'Цена лекции обновлена.',
                              reply_markup=BuildMarkup.menu(message.from_user.id))
         except Exception as exp:
-            bot.send_message(message.from_user.id, str(exp))
+            bot.send_message(message.from_user.id,
+                             str(exp),
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
 
 
 class EditLessonDate:
@@ -447,7 +473,9 @@ class EditLessonDate:
                              'Цена лекции обновлена.',
                              reply_markup=BuildMarkup.menu(message.from_user.id))
         except Exception as exp:
-            bot.send_message(message.from_user.id, str(exp))
+            bot.send_message(message.from_user.id,
+                             str(exp),
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
 
 
 class DeleteLesson:
@@ -469,7 +497,9 @@ class DeleteLesson:
                              'Лекция удалена.',
                              reply_markup=BuildMarkup.menu(message.from_user.id))
         except Exception as exp:
-            bot.send_message(message.from_user.id, str(exp))
+            bot.send_message(message.from_user.id,
+                             str(exp),
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
 
 
 class ViewCourses:
@@ -504,7 +534,9 @@ class ViewCourse:
             bot.send_message(message.from_user.id, to_text,
                              reply_markup=BuildMarkup.menu(message.from_user.id))
         except Exception as exp:
-            bot.send_message(message.from_user.id, str(exp))
+            bot.send_message(message.from_user.id,
+                             str(exp),
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
 
 
 class ViewAccess:
@@ -542,7 +574,9 @@ class ToCartCourse:
                              'Курс добавлен в корзину',
                              reply_markup=BuildMarkup.menu(message.from_user.id))
         except Exception as exp:
-            bot.send_message(message.from_user.id, str(exp))
+            bot.send_message(message.from_user.id,
+                             str(exp),
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
 
 
 class ToCartLesson:
@@ -561,7 +595,9 @@ class ToCartLesson:
                              'Лекция добавлена в корзину',
                              reply_markup=BuildMarkup.menu(message.from_user.id))
         except Exception as exp:
-            bot.send_message(message.from_user.id, str(exp))
+            bot.send_message(message.from_user.id,
+                             str(exp),
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
 
 
 class CleanCart:
@@ -576,7 +612,9 @@ class CleanCart:
                              'Корзина очищена',
                              reply_markup=BuildMarkup.menu(message.from_user.id))
         except Exception as exp:
-            bot.send_message(message.from_user.id, str(exp))
+            bot.send_message(message.from_user.id,
+                             str(exp),
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
 
 
 class Buy:
@@ -632,6 +670,7 @@ class BotMain:
         else:
             bot.send_message(message.from_user.id, 'Добро пожаловать!',
                              reply_markup=BuildMarkup.menu(message.from_user.id))
+        ViewCourses.step1(message)
 
     @bot.message_handler(content_types=['text'])
     @staticmethod

@@ -182,8 +182,7 @@ def get_lesson_id(course_id: int,
                   lesson_name: str
                   ) -> int:
     with Session(autoflush=True, bind=engine) as session:
-        lesson = session.query(Lesson).filter(
-            Lesson.course_id == course_id and Lesson.name == lesson_name).first()
+        lesson = session.query(Lesson).filter(Lesson.course_id == course_id).filter(Lesson.name == lesson_name).first()
         assert lesson is not None, 'Lesson is not exist'
         return lesson.id
 

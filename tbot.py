@@ -341,7 +341,7 @@ class SelectLesson:
     @staticmethod
     def step3(message: telebot.types.Message,
               course_id: int,
-              callback_fund: Callable[[telebot.types.Message, int | None], None],
+              callback_func: Callable[[telebot.types.Message, int | None], None],
               post_message: str):
         try:
             lesson_name = message.text
@@ -349,10 +349,10 @@ class SelectLesson:
             if post_message is not None:
                 bot.send_message(message.from_user.id, post_message)
                 bot.register_next_step_handler(message,
-                                               callback_fund,
+                                               callback_func,
                                                lesson_id)
             else:
-                callback_fund(message, lesson_id)
+                callback_func(message, lesson_id)
         except Exception as exp:
             bot.send_message(message.from_user.id, str(exp))
 
@@ -595,7 +595,7 @@ class Buy:
         database_funcs.on_success_payment(int(message.successful_payment.invoice_payload))
         bot.send_message(message.from_user.id,
                          'Вы были зачислены на оплаченные курсы. Ожидайте ссылку-приглашение',
-                         reply_markup=BuildMarkup.menu())
+                         reply_markup=BuildMarkup.menu(message.from_user.id))
 
 
 class BotMain:

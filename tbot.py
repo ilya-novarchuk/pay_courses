@@ -36,6 +36,8 @@ class BuildMarkup:
             btns.append(telebot.types.KeyboardButton('/edit_lesson_price'))
             btns.append(telebot.types.KeyboardButton('/edit_lesson_date'))
             btns.append(telebot.types.KeyboardButton('/delete_lesson'))
+            btns.append(telebot.types.KeyboardButton('/send_message_lesson'))
+            btns.append(telebot.types.KeyboardButton('/send_message_course'))
         btns.append(telebot.types.KeyboardButton('Обзор курсов'))
         btns.append(telebot.types.KeyboardButton('Обзор лекций'))
         btns.append(telebot.types.KeyboardButton('Приобрести курс'))
@@ -616,6 +618,70 @@ class CleanCart:
                              str(exp),
                              reply_markup=BuildMarkup.menu(message.from_user.id))
 
+
+class SendMessageLesson:
+
+    @bot.message_handler(commands=['send_message_lesson'])
+    @staticmethod
+    def step1(message: telebot.types.Message):
+        if is_admin(message.from_user.id):
+            bot.send_message(message.from_user.id,
+                             'Вы отправляете сообщение всем подписчикам лекции!')
+            SelectLesson.step1(message, SendMessageLesson.step2, 'Введите сообщение:')
+        else:
+            bot.send_message(message.from_user.id,
+                             'Вы не администратор.',
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
+
+    @staticmethod
+    def step2(message: telebot.types.Message,
+              lesson_id: int):
+        subs = database_funcs.get_subscribers_lesson(lesson_id)
+        course_id = database_funcs.get_lesson_course(lesson_id)
+        course_name = database_funcs.get_course_name(course_id)
+        lesson_name = database_funcs.get_lesson_name(lesson_id)
+        to_text = f'Сообщение по лекции {course_name}: {lesson_name}\n\n{message.text}'
+        for sub in subs:
+            try:
+                tid = database_funcs.get_telegram_id(sub)
+                bot.send_message(tid, to_text)
+            except:
+                pass
+        bot.send_message(message.from_user.id,
+                         'Сообщение было отправлено',
+                         reply_markup=BuildMarkup.menu(message.from_user.id))
+
+
+
+class SendMessageCourse:
+
+    @bot.message_handler(commands=['send_message_course'])
+    @staticmethod
+    def step1(message: telebot.types.Message):
+        if is_admin(message.from_user.id):
+            bot.send_message(message.from_user.id,
+                             'Вы отправляете сообщение всем подписчикам курса!')
+            SelectCourse.step1(message, SendMessageCourse.step2, 'Введите сообщение:')
+        else:
+            bot.send_message(message.from_user.id,
+                             'Вы не администратор.',
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
+
+    @staticmethod
+    def step2(message: telebot.types.Message,
+              course_id: int):
+        subs = database_funcs.get_subscribers_course(course_id)
+        course_name = database_funcs.get_course_name(course_id)
+        to_text = f'Сообщение по курсу: {course_name}\n\n{message.text}'
+        for sub in subs:
+            try:
+                tid = database_funcs.get_telegram_id(sub)
+                bot.send_message(tid, to_text)
+            except:
+                pass
+        bot.send_message(message.from_user.id,
+                         'Сообщение было отправлено',
+                         reply_markup=BuildMarkup.menu(message.from_user.id))
 
 class Buy:
 

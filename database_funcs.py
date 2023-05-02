@@ -264,6 +264,15 @@ def get_user_id(telegram_id: str) -> int:
         return user.id
 
 
+def get_telegram_id(user_id: int) -> str:
+    with Session(autoflush=True, bind=engine) as session:
+        user = session.query(User).filter(
+            User.id == user_id
+        ).first()
+        assert user is not None
+        return user.telegram_id
+
+
 # # #
 # # # USERS MANAGMENT END
 # # #
@@ -447,4 +456,20 @@ def get_user_access_lessons(user_id: int) -> List[int]:
         ac = session.query(LessonAccess).filter(
             LessonAccess.user_id == user_id).all()
         return [a.lesson_id for a in ac]
+
+
+def get_subscribers_lesson(lesson_id: int) -> List[int]:
+    with Session(autoflush=True, bind=engine) as session:
+        ac = session.query(LessonAccess).filter(
+            LessonAccess.lesson_id == lesson_id).all()
+        return [a.user_id for a in ac]
+
+
+def get_subscribers_course(course_id: int) -> List[int]:
+    ret = set()
+    for lesson in get_lessons():
+        if lesson.course_id == course_id:
+            for subs in get_subscribers_lesson(lesson.id):
+                ret.add(subs)
+    return list(ret)
 

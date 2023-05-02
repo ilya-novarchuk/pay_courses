@@ -13,7 +13,7 @@ import telebot
 import config
 
 
-engine = sqlalchemy.create_engine(config.DATABASE, echo=True)
+engine = sqlalchemy.create_engine(config.DATABASE)
 Base = sqlalchemy.orm.declarative_base()
 
 

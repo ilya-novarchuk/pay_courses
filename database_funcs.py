@@ -319,7 +319,8 @@ def delete_payed_cart(user_id: int):
         carts = session.query(ShoppingCart).filter(ShoppingCart.user_id == user_id).all()
         for cart in carts:
             if session.query(LessonAccess).filter(
-                LessonAccess.user_id == user_id and
+                LessonAccess.user_id == user_id
+            ).filter(
                 LessonAccess.lesson_id == cart.lesson_id
             ).first() is not None:
                 session.delete(cart)

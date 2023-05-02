@@ -200,6 +200,92 @@ def add_user(telegram_id: str):
             pass
 
 
+def get_user_id(telegram_id: str) -> int:
+    with Session(autoflush=True, bind=engine) as session:
+        user = session.query(User).filter(
+            User.telegram_id == telegram_id
+        ).first()
+        assert user is not None
+        return user.id
+
+
 # # #
 # # # USERS MANAGMENT END
 # # #
+
+
+# # #
+# # # SHOPPING CART MANAGMENT
+# # #
+
+
+def add_shopping_cart_lesson(user_id: int, lesson_id: int):
+    with Session(autoflush=True, bind=engine) as session:
+        try:
+            cart_lesson = ShoppingCart(user_id=user_id,
+                                       lesson_id=lesson_id)
+            session.add(cart_lesson)
+            session.commit()
+        except sqlalchemy.exc.IntegrityError:
+            pass
+
+
+def add_shopping_cart_course(user_id: int, course_id: int):
+    with Session(autoflush=True, bind=engine) as session:
+        actual_cart = session.query(ShoppingCart).filter(ShoppingCart.user_id == user_id).all()
+        actual_cart_les_ids = [cart.lesson_id for cart in actual_cart]
+        lessons = session.query(Lesson).filter(Lesson.course_id == course_id).all()
+        for lesson in lessons:
+            if lesson.id not in actual_cart_les_ids:
+                cart_lesson = ShoppingCart(user_id=user_id,
+                                            lesson_id=lesson.id)
+                session.add(cart_lesson)
+        session.commit()
+
+
+def clean_shopping_cart(user_id: int):
+    with Session(autoflush=True, bind=engine) as session:
+        carts = session.query(ShoppingCart).filter(ShoppingCart.user_id == user_id).all()
+        for cart in carts:
+            session.delete(cart)
+        session.commit()
+
+
+def is_empty_shopping_cart(user_id: int) -> bool:
+    with Session(autoflush=True, bind=engine) as session:
+        t = session.query(ShoppingCart).filter(
+            ShoppingCart.user_id == user_id
+        ).first()
+        return t is None
+
+
+# # #
+# # # SHOPPING CART MANAGMENT END
+# # #
+
+
+# # #
+# # # PAYMENTS TEMP MANAGMENT
+# # #
+
+
+def create_temp_payment(user_id: int, lessons: List[int]):
+    pass
+
+
+def get_payment_lessons(user_id: int) -> List[int]:
+    pass
+
+
+# # #
+# # # PAYMENTS TEMP MANAGMENT END
+# # #
+
+
+def is_access_lesson(user_id: int, lesson_id: int) -> bool:
+    pass
+
+
+def is_access_course(user_id: int, course_id: int) -> bool:
+    pass
+

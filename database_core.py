@@ -43,13 +43,36 @@ class Lesson(Base):
     )
 
 
-class Payment(Base):
-    __tablename__ = 'Payments'
+class ShoppingCart(Base):
+    __tablename__ = 'ShopingCart'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey('Users.id'))
     lesson_id = Column(Integer, ForeignKey('Lessons.id'))
 
+    __table_args__ = (
+        UniqueConstraint('user_id', 'lesson_id', name='_uniqqq'),
+    )
+
+
+class TempPayment(Base):
+    __tablename__ = 'TempPayments'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('Users.id'))
+    lessons = Column(String) # list of lesson id (json)
+
+
+class LessonAccess(Base):
+    __tablename__ = 'LessonAccess'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('Users.id'))
+    lesson_id = Column(Integer, ForeignKey('Lessons.id'))
+
+    __table_args__ = (
+        UniqueConstraint('user_id', 'lesson_id', name='_uniqqqq'),
+    )
 
 
 Base.metadata.create_all(engine)

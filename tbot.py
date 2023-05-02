@@ -21,10 +21,10 @@ def is_admin(id: int | str) -> bool:
 class BuildMarkup:
 
     @staticmethod
-    def menu(id) -> telebot.types.ReplyKeyboardMarkup:
+    def menu(telegram_id) -> telebot.types.ReplyKeyboardMarkup:
         markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
         btns = []
-        if is_admin(id):
+        if is_admin(telegram_id):
             btns.append(telebot.types.KeyboardButton('/create_course'))
             btns.append(telebot.types.KeyboardButton('/edit_course_name'))
             btns.append(telebot.types.KeyboardButton('/edit_course_description'))
@@ -36,8 +36,14 @@ class BuildMarkup:
             btns.append(telebot.types.KeyboardButton('/edit_lesson_price'))
             btns.append(telebot.types.KeyboardButton('/edit_lesson_date'))
             btns.append(telebot.types.KeyboardButton('/delete_lesson'))
-        btns.append('Обзор курсов')
-        btns.append('Обзор лекций')
+        btns.append(telebot.types.KeyboardButton('Обзор курсов'))
+        btns.append(telebot.types.KeyboardButton('Обзор лекций'))
+        btns.append(telebot.types.KeyboardButton('Приобрести курс'))
+        btns.append(telebot.types.KeyboardButton('Приобрести лекцию'))
+        user_id = database_funcs.get_user_id(telegram_id)
+        if not database_funcs.is_empty_shopping_cart(user_id):
+            btns.append(telebot.types.KeyboardButton('Оплатить'))
+            btns.append(telebot.types.KeyboardButton('Очистить корзину'))
         markup.add(*btns)
         return markup
 
@@ -498,6 +504,59 @@ class ViewCourse:
             bot.send_message(message.from_user.id, str(exp))
 
 
+class ToCartCourse:
+
+    @bot.message_handler(commands=['to_cart_course'])
+    @staticmethod
+    def step1(message: telebot.types.Message):
+        SelectCourse.step1(message, ToCartCourse.step2, None)
+
+    def step2(message: telebot.types.Message,
+              course_id: int):
+        try:
+            user_id = database_funcs.get_user_id(str(message.from_user.id))
+            database_funcs.add_shopping_cart_course(user_id, course_id)
+            bot.send_message(message.from_user.id,
+                             'Курс добавлен в корзину',
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
+        except Exception as exp:
+            bot.send_message(message.from_user.id, str(exp))
+
+
+class ToCartLesson:
+
+    @bot.message_handler(commands=['to_cart_lesson'])
+    @staticmethod
+    def step1(message: telebot.types.Message):
+        SelectLesson.step1(message, ToCartLesson.step2, None)
+
+    def step2(message: telebot.types.Message,
+              lesson_id: int):
+        try:
+            user_id = database_funcs.get_user_id(str(message.from_user.id))
+            database_funcs.add_shopping_cart_lesson(user_id, lesson_id)
+            bot.send_message(message.from_user.id,
+                             'Лекция добавлена в корзину',
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
+        except Exception as exp:
+            bot.send_message(message.from_user.id, str(exp))
+
+
+class CleanCart:
+
+    @bot.message_handler(commands=['clean_cart'])
+    @staticmethod
+    def step1(message: telebot.types.Message):
+        try:
+            user_id = database_funcs.get_user_id(message.from_user.id)
+            database_funcs.clean_shopping_cart(user_id)
+            bot.send_message(message.from_user.id,
+                             'Корзина очищена',
+                             reply_markup=BuildMarkup.menu(message.from_user.id))
+        except Exception as exp:
+            bot.send_message(message.from_user.id, str(exp))
+
+
 class BotMain:
 
     @bot.message_handler(commands=['start'])
@@ -519,6 +578,12 @@ class BotMain:
             ViewCourses.step1(message)
         elif message.text == 'Обзор лекций':
             ViewCourse.step1(message)
+        elif message.text == 'Приобрести лекцию':
+            ToCartLesson.step1(message)
+        elif message.text == 'Приобрести курс':
+            ToCartCourse.step1(message)
+        elif message.text == 'Очистить корзину':
+            CleanCart.step1(message)
         else:
             bot.send_message(message.from_user.id,
                             'Не распознано',

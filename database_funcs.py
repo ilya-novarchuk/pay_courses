@@ -178,6 +178,14 @@ def delete_lesson(id: int):
         session.commit()
 
 
+def get_lesson(lesson_id: int,
+               ) -> Lesson:
+    with Session(autoflush=True, bind=engine) as session:
+        lesson = session.query(Lesson).filter(Lesson.id == lesson_id).first()
+        assert lesson is not None, 'Lesson is not exist'
+        return lesson
+
+
 def get_lesson_id(course_id: int,
                   lesson_name: str
                   ) -> int:
@@ -403,4 +411,17 @@ def add_access(user_id: int, lesson_id: int):
 
 def is_access_lesson(user_id: int, lesson_id: int) -> bool:
     pass
+
+
+def is_user_access_empty(user_id: int) -> bool:
+    with Session(autoflush=True, bind=engine) as session:
+        ac = session.query(LessonAccess).filter(LessonAccess.user_id == user_id).all()
+        return len(ac) == 0
+
+
+def get_user_access_lessons(user_id: int) -> List[int]:
+    with Session(autoflush=True, bind=engine) as session:
+        ac = session.query(LessonAccess).filter(
+            LessonAccess.user_id == user_id).all()
+        return [a.lesson_id for a in ac]
 

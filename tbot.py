@@ -41,6 +41,8 @@ class BuildMarkup:
         btns.append(telebot.types.KeyboardButton('Приобрести курс'))
         btns.append(telebot.types.KeyboardButton('Приобрести лекцию'))
         user_id = database_funcs.get_user_id(telegram_id)
+        if not database_funcs.is_user_access_empty(user_id):
+            btns.append(telebot.types.KeyboardButton('Доступные лекции'))
         if not database_funcs.is_empty_shopping_cart(user_id):
             btns.append(telebot.types.KeyboardButton('Оплатить'))
             btns.append(telebot.types.KeyboardButton('Очистить корзину'))
@@ -497,11 +499,31 @@ class ViewCourse:
             lessons = database_funcs.get_lessons_by_course(course_id)
             lessons.sort(key=lambda l: l.date)
             for num, l in enumerate(lessons):
-                to_text += f'\n\n{num + 1}. {l.name}\n{l.description}\nДата: {l.date}'
+                date = l.date.strftime('%m.%d.%Y %H:%M')
+                to_text += f'\n\n{num + 1}: {l.name}\n{l.description}\nДата: {date}'
             bot.send_message(message.from_user.id, to_text,
                              reply_markup=BuildMarkup.menu(message.from_user.id))
         except Exception as exp:
             bot.send_message(message.from_user.id, str(exp))
+
+
+class ViewAccess:
+
+    @bot.message_handler(commands=['view_access'])
+    @staticmethod
+    def step1(message: telebot.types.Message):
+        user_id = database_funcs.get_user_id(str(message.from_user.id))
+        lesson_ids = database_funcs.get_user_access_lessons(user_id)
+        lessons = [database_funcs.get_lesson(lid) for lid in lesson_ids]
+        lessons.sort(key=lambda l: l.date)
+        to_text = 'Список доступных лекций:'
+        for l in lessons:
+            c_name = database_funcs.get_course_name(l.course_id)
+            date = l.date.strftime('%m.%d.%Y %H:%M')
+            to_text += f'\n\n{c_name}. {l.name}\n{l.description}\nДата: {date}'
+        bot.send_message(message.from_user.id,
+                         to_text,
+                         reply_markup=BuildMarkup.menu(message.from_user.id))
 
 
 class ToCartCourse:
@@ -623,6 +645,8 @@ class BotMain:
             ToCartLesson.step1(message)
         elif message.text == 'Приобрести курс':
             ToCartCourse.step1(message)
+        elif message.text == 'Доступные лекции':
+            ViewAccess.step1(message)
         elif message.text == 'Оплатить':
             Buy.buy(message)
         elif message.text == 'Очистить корзину':

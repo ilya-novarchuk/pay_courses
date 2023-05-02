@@ -557,6 +557,47 @@ class CleanCart:
             bot.send_message(message.from_user.id, str(exp))
 
 
+class Buy:
+
+    @bot.message_handler(commands=['buy'])
+    @staticmethod
+    def buy(message: telebot.types.Message):
+        user_id = database_funcs.get_user_id(message.from_user.id)
+        payassigment = database_funcs.build_pay_assigment(user_id)
+        if len(payassigment.lesson_ids) == 0:
+            bot.send_message(message.from_user.id, 'Корзина пуста')
+            return
+        temp_payment_id = database_funcs.create_temp_payment(user_id,
+                                                             payassigment)
+        database_funcs.clean_shopping_cart(user_id)
+
+        print(payassigment.prices)
+
+        bot.send_invoice(
+            chat_id=message.from_user.id,
+            title='Курсы АГУ',
+            description='Оплата курсов Адыгейского Государственного Унивреситете',
+            invoice_payload=str(temp_payment_id),
+            provider_token=config.SBERBANK_TOKEN,
+            currency='RUB',
+            prices=payassigment.prices
+        )
+
+    @bot.pre_checkout_query_handler(func=lambda query: True)
+    @staticmethod
+    def checkout(pre_checkout_query: telebot.types.PreCheckoutQuery):
+        bot.answer_pre_checkout_query(pre_checkout_query.id,
+                                      ok=True)
+
+    @bot.message_handler(content_types=['successful_payment'])
+    @staticmethod
+    def got_payment(message: telebot.types.Message):
+        database_funcs.on_success_payment(int(message.successful_payment.invoice_payload))
+        bot.send_message(message.from_user.id,
+                         'Вы были зачислены на оплаченные курсы. Ожидайте ссылку-приглашение',
+                         reply_markup=BuildMarkup.menu())
+
+
 class BotMain:
 
     @bot.message_handler(commands=['start'])
@@ -582,6 +623,8 @@ class BotMain:
             ToCartLesson.step1(message)
         elif message.text == 'Приобрести курс':
             ToCartCourse.step1(message)
+        elif message.text == 'Оплатить':
+            Buy.buy(message)
         elif message.text == 'Очистить корзину':
             CleanCart.step1(message)
         else:

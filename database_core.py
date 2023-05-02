@@ -1,9 +1,14 @@
 
 
+from dataclasses import dataclass
+from typing import List
+
 import sqlalchemy
 import sqlalchemy.orm
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy import UniqueConstraint
+
+import telebot
 
 import config
 
@@ -53,6 +58,12 @@ class ShoppingCart(Base):
     __table_args__ = (
         UniqueConstraint('user_id', 'lesson_id', name='_uniqqq'),
     )
+
+
+@dataclass
+class PayAssigment:
+    lesson_ids: List[str]
+    prices: List[telebot.types.LabeledPrice]
 
 
 class TempPayment(Base):

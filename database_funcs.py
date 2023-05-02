@@ -277,6 +277,7 @@ def get_user_id(telegram_id: str) -> int:
 def add_shopping_cart_lesson(user_id: int, lesson_id: int):
     with Session(autoflush=True, bind=engine) as session:
         try:
+            assert not is_access_lesson(user_id, lesson_id), 'Лекция уже оплачена'
             cart_lesson = ShoppingCart(user_id=user_id,
                                        lesson_id=lesson_id)
             session.add(cart_lesson)
@@ -287,6 +288,9 @@ def add_shopping_cart_lesson(user_id: int, lesson_id: int):
 
 def add_shopping_cart_course(user_id: int, course_id: int):
     with Session(autoflush=True, bind=engine) as session:
+
+        assert not is_access_course(user_id, course_id), 'Курс уже оплачен'
+
         actual_cart = session.query(ShoppingCart).filter(ShoppingCart.user_id == user_id).all()
         actual_cart_les_ids = [cart.lesson_id for cart in actual_cart]
         lessons = session.query(Lesson).filter(Lesson.course_id == course_id).all()
@@ -411,7 +415,25 @@ def add_access(user_id: int, lesson_id: int):
 
 
 def is_access_lesson(user_id: int, lesson_id: int) -> bool:
-    pass
+    with Session(autoflush=True, bind=engine) as session:
+        ac = session.query(LessonAccess).filter(
+            LessonAccess.user_id == user_id
+        ).filter(
+            LessonAccess.lesson_id == lesson_id
+        ).first()
+        return ac is not None
+
+
+def is_access_course(user_id: int, course_id: int) -> bool:
+    with Session(autoflush=True, bind=engine) as session:
+        course_lessons = session.query(Lesson).filter(
+            Lesson.course_id == course_id
+        ).all()
+        for lesson in course_lessons:
+            if not is_access_lesson(user_id, lesson.id):
+                return False
+        else:
+            return True
 
 
 def is_user_access_empty(user_id: int) -> bool:
